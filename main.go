@@ -33,6 +33,10 @@ func main() {
 	authGroup := router.Group("/api/v1/auth")
 	routes.AuthRouter(authGroup)
 
+	// add user router
+	userGroup := router.Group("/api/v1/user")
+	routes.UserRouter(userGroup)
+
 	// Health testing route
 	router.GET("/api/v1/health", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"Success": "Access granted for /api/v1"})
