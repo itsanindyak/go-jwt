@@ -131,3 +131,15 @@ func GetUsers() gin.HandlerFunc {
 }
 
 
+func DeleteUser()gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+		
+
+	}
+}
+
+func UpdateUser() gin.HandlerFunc{
+	return func(ctx *gin.Context) {
+
+	}
+}
