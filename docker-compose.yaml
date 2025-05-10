@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  database:
+    image: mongo:8.0-noble
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pass
+    networks:
+      - go-net
+    restart: always
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    container_name: goapp
+    build:
+      context: .
+      dockerfile: dockerfile
+    ports:
+      - "9050:9050"
+    env_file:
+      - ".env"
+    restart: always
+    networks:
+      - go-net
+    depends_on:
+      - database
+
+volumes:
+  mongo-data:
+
+networks:
+  go-net:
