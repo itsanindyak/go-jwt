@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/itsanindyak/go-jwt/config"
+	routes "github.com/itsanindyak/go-jwt/routes"
 )
 
 func main() {
@@ -27,6 +28,10 @@ func main() {
 
 	// add middleware for logging
 	router.Use(gin.Logger())
+
+	// Add auth router
+	authGroup := router.Group("/api/v1/auth")
+	routes.AuthRouter(authGroup)
 
 	// Health testing route
 	router.GET("/api/v1/health", func(ctx *gin.Context) {
