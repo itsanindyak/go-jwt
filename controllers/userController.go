@@ -9,7 +9,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/itsanindyak/go-jwt/database"
-	"github.com/itsanindyak/go-jwt/helpers"
 	"github.com/itsanindyak/go-jwt/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -24,11 +23,6 @@ func GetUser() gin.HandlerFunc {
 		userId := c.Param("user_id")
 		objId, err := primitive.ObjectIDFromHex(userId)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
-
-		if err := helpers.CheckGrant(c, helpers.GrantOptions{RequestedUserID: userId}); err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
@@ -60,10 +54,6 @@ func GetUser() gin.HandlerFunc {
 
 func GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if err := helpers.CheckGrant(c, helpers.GrantOptions{AdminOnly: true}); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
@@ -130,15 +120,24 @@ func GetUsers() gin.HandlerFunc {
 	}
 }
 
+func DeleteUser() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("user_id")
+		if userID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found in params"})
+			return
+		}
 
-func DeleteUser()gin.HandlerFunc{
-	return func(ctx *gin.Context) {
-		
+		_, err := primitive.ObjectIDFromHex(userID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 
 	}
 }
 
-func UpdateUser() gin.HandlerFunc{
+func UpdateUser() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 
 	}
