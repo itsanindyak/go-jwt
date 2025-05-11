@@ -1,0 +1,30 @@
+# Ignore the Go build artifacts
+/bin/
+/pkg/
+/*.exe
+/*.dll
+/*.so
+/*.dylib
+
+# Ignore temporary files
+*.tmp
+*.log
+*.out
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore Docker-related files
+Dockerfile*
+docker-compose.yml
+docker-compose.override.yml
+
+# Ignore test files
+*_test.go
+
+# Ignore environment files
+.env
+.env.*
