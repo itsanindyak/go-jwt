@@ -12,7 +12,7 @@ type User struct {
 	LastName     string             `json:"last_name" validate:"required,min=3,max=20"`
 	Password     string             `json:"password" validate:"required,min=6"`
 	Email        string             `json:"email" validate:"required,email"`
-	UserType     string             `json:"user_type" validate:"required,oneof=ADMIN USER"`
+	UserType     string             `json:"user_type" validate:"required,oneof=ADMIN MODERATOR USER"`
 	RefreshToken string             `json:"refresh_token,omitempty"`
 	CreatedAt    time.Time          `json:"created_at"`
 	UpdatedAt    time.Time          `json:"updated_at"`
