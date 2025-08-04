@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Your OTP Code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f2f2f2;font-family:Arial,sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f2f2f2;padding:20px 0;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border-radius:8px;padding:40px 20px;">
+          <tr>
+            <td align="center" style="padding-bottom:20px;">
+              <h2 style="margin:0;color:#333;">Hello, {{.Name}} 👋</h2>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-bottom:10px;">
+              <p style="font-size:16px;color:#555;margin:0;">Your One-Time Password (OTP) is:</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding:20px 0;">
+              <div style="display:inline-block;background-color:#007BFF;color:#ffffff;font-size:24px;font-weight:bold;padding:12px 24px;border-radius:6px;letter-spacing:4px;">
+                {{.OTP}}
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding-top:10px;">
+              <p style="font-size:14px;color:#888;margin:0 0 20px;">This OTP is valid for 10 minutes. Please do not share it with anyone.</p>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center">
+              <p style="font-size:14px;color:#aaa;margin-top:30px;">Need help? Contact our support team.</p>
+              <p style="font-size:14px;color:#aaa;">Thanks,<br><strong>Team GoAuth</strong></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
