@@ -176,24 +176,6 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
-		// c.SetCookie(
-		// 	"Refreshtoken",     // Name
-		// 	token.RefreshToken, // Value
-		// 	3600,
-		// 	"/",   // Path
-		// 	"",    // Domain (empty for current domain)
-		// 	false, // Secure (true for HTTPS, false for local HTTP)
-		// 	true,  // HttpOnly
-		// )
-		// c.SetCookie(
-		// 	"token",           // Name
-		// 	token.SignedToken, // Value
-		// 	3600,
-		// 	"/",   // Path
-		// 	"",    // Domain (empty for current domain)
-		// 	false, // Secure (true for HTTPS, false for local HTTP)
-		// 	true,  // HttpOnly
-		// )
 
 		c.JSON(http.StatusOK, gin.H{
 			"Message": "OTP send to email.Please verify.",
