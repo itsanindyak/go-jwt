@@ -12,3 +12,7 @@ type Signup struct {
 	UserType  string `json:"user_type" validate:"required,oneof=ADMIN MODERATOR USER"`
 	Password  string `json:"password" validate:"required,min=6"`
 }
+
+type OTPReq struct{
+	OTP string `json:"otp" validate:"required"`
+}
