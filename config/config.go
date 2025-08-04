@@ -24,7 +24,7 @@ func init() {
 
 	// Load .env only if not in production
 	if ENV = os.Getenv("ENV"); ENV != "production" {
-		ENV = "local"
+		ENV = "development"
 		err = godotenv.Load(".env")
 		if err != nil {
 			logger.Error("Could not load .env file, continuing with system environment variables")
