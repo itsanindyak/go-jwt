@@ -1,14 +1,15 @@
 package config
 
 import (
-	"log"
 	"os"
 	"strconv"
 
+	"github.com/itsanindyak/go-jwt/logger"
 	"github.com/joho/godotenv"
 )
 
 var (
+	ENV                  string
 	PORT                 string
 	MONGO_URI            string
 	TOKEN_KEY            []byte
@@ -22,11 +23,14 @@ func init() {
 	var err error
 
 	// Load .env only if not in production
-	if os.Getenv("ENV") != "production" {
+	if ENV = os.Getenv("ENV"); ENV != "production" {
+		ENV = "local"
 		err = godotenv.Load(".env")
 		if err != nil {
-			log.Println("⚠️ Could not load .env file, continuing with system environment variables")
+			logger.Error("Could not load .env file, continuing with system environment variables")
+			return
 		}
+		logger.Success("📦 Running in " + ENV + " environment")
 	}
 
 	// port
@@ -46,7 +50,7 @@ func init() {
 	TOKEN_EXPIRY, err = strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
 
 	if err != nil {
-		log.Fatal("❌ TOKEN_EXPIRY is not a valid integer")
+		logger.Fatal("❌ TOKEN_EXPIRY is not a valid integer")
 	}
 
 	// Token key
@@ -58,13 +62,13 @@ func init() {
 	REFRESH_TOKEN_EXPIRY, err = strconv.Atoi(os.Getenv("REFRESH_TOKEN_EXPIRY"))
 
 	if err != nil {
-		log.Fatal("❌ REFRESH_TOKEN_EXPIRY is not a valid integer")
+		logger.Fatal("❌ REFRESH_TOKEN_EXPIRY is not a valid integer")
 	}
 
 	OTP_EXPIRY, err = strconv.Atoi(os.Getenv("OTP_EXPIRY"))
 
 	if err != nil {
-		log.Fatal("❌ OTP_EXPIRY is not a valid integer")
+		logger.Fatal("❌ OTP_EXPIRY is not a valid integer")
 	}
 
 }
