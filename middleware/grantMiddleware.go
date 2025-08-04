@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/itsanindyak/go-jwt/helpers"
+	"github.com/itsanindyak/go-jwt/pkg/helpers"
 )
 
 func GrantMiddleware(Permissions []string) gin.HandlerFunc {
@@ -43,4 +43,3 @@ func GrantMiddleware(Permissions []string) gin.HandlerFunc {
 		c.Next()
 	}
 }
-

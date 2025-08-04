@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/itsanindyak/go-jwt/logger"
+	"github.com/itsanindyak/go-jwt/pkg/logger"
 	"github.com/joho/godotenv"
 )
 

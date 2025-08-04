@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/itsanindyak/go-jwt/helpers"
+	"github.com/itsanindyak/go-jwt/pkg/helpers"
 )
 
 func Authenticate() gin.HandlerFunc {
