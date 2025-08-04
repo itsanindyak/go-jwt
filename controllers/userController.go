@@ -17,6 +17,8 @@ import (
 
 var User *mongo.Collection = database.GetCollection(context.Background(), "user")
 
+var OTP *mongo.Collection = database.GetCollection(context.Background(),"otp")
+
 func GetUser() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
