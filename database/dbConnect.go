@@ -2,11 +2,11 @@ package database
 
 import (
 	"context"
-	"log"
 	"sync"
 	"time"
 
 	"github.com/itsanindyak/go-jwt/config"
+	"github.com/itsanindyak/go-jwt/pkg/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -28,14 +28,14 @@ func DbConnect() *mongo.Client {
 
 		c, err := mongo.Connect(ctx, clientOptions)
 		if err != nil {
-			log.Fatal("❌ MongoDB connection error:", err)
+			logger.Fatal("MongoDB connection error: " + err.Error())
 		}
 
 		if err := c.Ping(ctx, nil); err != nil {
-			log.Fatal("❌ MongoDB ping error:", err)
+			logger.Fatal("❌ MongoDB ping error:" + err.Error())
 		}
 
-		log.Println("✅ Connected to MongoDB")
+		logger.Success("✅ Connected to MongoDB")
 		client = c
 	})
 
