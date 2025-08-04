@@ -10,14 +10,32 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/itsanindyak/go-jwt/database"
 	"github.com/itsanindyak/go-jwt/models"
+	"github.com/itsanindyak/go-jwt/pkg/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var User *mongo.Collection = database.GetCollection(context.Background(), "user")
 
 var OTP *mongo.Collection = database.GetCollection(context.Background(),"otp")
+
+func init() {
+    indexModel := mongo.IndexModel{
+        Keys: bson.M{"expiresAt": 1},
+        Options: options.Index().
+            SetExpireAfterSeconds(0),
+    }
+
+    _, err := OTP.Indexes().CreateOne(context.Background(), indexModel)
+    if err != nil {
+        logger.Error("⚠️ TTL index creation failed: "+ err.Error())
+    } else {
+        logger.Success("✅ TTL index ensured")
+    }
+}
+
 
 func GetUser() gin.HandlerFunc {
 
