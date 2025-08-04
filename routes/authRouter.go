@@ -9,5 +9,6 @@ func AuthRouter(route *gin.RouterGroup) {
 
 	route.POST("/signup", controllers.Signup())
 	route.POST("/login", controllers.Login())
+	route.POST("/verify/:id",controllers.VerifyOTP())
 
 }
