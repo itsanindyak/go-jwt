@@ -16,11 +16,9 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 		logger.Info("🚀 Running in PRODUCTION mode")
 	case "development":
-		gin.SetMode(gin.TestMode)
-		logger.Info("🧪 Running in TEST mode")
-	default:
 		gin.SetMode(gin.DebugMode)
-		logger.Info("🛠️ Running in DEVELOPMENT mode")
+		logger.Info("🧪 Running in DEBUG mode")
+	
 	}
 	port := config.PORT
 
