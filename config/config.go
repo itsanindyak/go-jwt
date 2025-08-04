@@ -17,6 +17,9 @@ var (
 	REFRESH_TOKEN_KEY    []byte
 	REFRESH_TOKEN_EXPIRY int
 	OTP_EXPIRY           int
+	SENDGRID_API_KEY string
+	SMTP_SENDER      string
+	SMTP_NAME        string
 )
 
 func init() {
@@ -33,42 +36,32 @@ func init() {
 		logger.Success("📦 Running in " + ENV + " environment")
 	}
 
-	// port
-
 	PORT = os.Getenv("PORT")
-
-	// Mongodb url
-
+	
 	MONGO_URI = os.Getenv("MONGO_URI")
-
-	// Token key
-
 	TOKEN_KEY = []byte(os.Getenv("TOKEN_KEY"))
 
-	// Token Expire
-
 	TOKEN_EXPIRY, err = strconv.Atoi(os.Getenv("TOKEN_EXPIRY"))
-
 	if err != nil {
 		logger.Fatal("❌ TOKEN_EXPIRY is not a valid integer")
 	}
 
-	// Token key
-
 	REFRESH_TOKEN_KEY = []byte(os.Getenv("REFRESH_TOKEN_KEY"))
-
-	// Token Expire
-
 	REFRESH_TOKEN_EXPIRY, err = strconv.Atoi(os.Getenv("REFRESH_TOKEN_EXPIRY"))
-
 	if err != nil {
 		logger.Fatal("❌ REFRESH_TOKEN_EXPIRY is not a valid integer")
 	}
 
 	OTP_EXPIRY, err = strconv.Atoi(os.Getenv("OTP_EXPIRY"))
-
 	if err != nil {
 		logger.Fatal("❌ OTP_EXPIRY is not a valid integer")
 	}
 
+	SENDGRID_API_KEY = os.Getenv("SENDGRID_API_KEY")
+	SMTP_SENDER = os.Getenv("SMTP_SENDER")
+	SMTP_NAME = os.Getenv("SMTP_NAME")
+
+	if SENDGRID_API_KEY == "" || SMTP_SENDER == "" {
+		logger.Fatal("❌ SENDGRID_API_KEY or SMTP_SENDER is missing in environment")
+	}
 }
