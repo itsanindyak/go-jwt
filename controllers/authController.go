@@ -9,10 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/itsanindyak/go-jwt/config"
 	"github.com/itsanindyak/go-jwt/helpers"
 	"github.com/itsanindyak/go-jwt/models"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,19 +52,15 @@ func Signup() gin.HandlerFunc {
 		defer cancel()
 
 		var signupdata helpers.Signup
-		var user models.User
+		var existingUser models.User
+		var newUser models.User
+		var otp models.OTP
 
 		// Parse and bind JSON input
 		if err := c.BindJSON(&signupdata); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-
-		// // Check for required fields
-		// if signupdata.Email == "" || signupdata.Password == "" || signupdata.FirstName == "" || signupdata.LastName == "" {
-		// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Name, email and password are required"})
-		// 	return
-		// }
 
 		if err := validate.Struct(&signupdata); err != nil {
 			var errors []string
@@ -73,74 +71,110 @@ func Signup() gin.HandlerFunc {
 			return
 		}
 
-		count, err := User.CountDocuments(ctx, bson.M{"email": signupdata.Email})
+		err := User.FindOne(ctx, bson.M{"email": signupdata.Email}).Decode(existingUser)
 
-		if err != nil {
-			log.Panic(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking for existing user"})
+		if err == nil {
+			if existingUser.Verified {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Email is already registered and verified."})
+				return
+			} else {
+				userOtp, _ := helpers.GenerateOTP(6)
+				otp = models.OTP{
+					UserID: newUser.ID,
+					Otp:    userOtp,
+					Used:   false,
+					TTL:    time.Now().Add(time.Duration(config.OTP_EXPIRY) * time.Second),
+				}
+
+				_, err := OTP.InsertOne(ctx, otp)
+				if err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OTP"})
+					return
+				}
+
+				// TODO: Send OTP to email (use SendGrid, SMTP, etc.)
+
+				c.JSON(http.StatusOK, gin.H{
+					"message": "Email already registered but not verified. OTP sent to your email.",
+				})
+				return
+			}
+		} else if err != mongo.ErrNoDocuments {
+			// Real DB error
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error checking user existence"})
 			return
 		}
 
-		if count > 0 {
-			c.JSON(http.StatusConflict, gin.H{"error": "Email already registered"})
-			return
-
-		}
-
-		user.Password, err = hashPassword(&signupdata.Password)
+		hashPassword, err := hashPassword(&signupdata.Password)
 
 		if err != nil {
 			log.Panic(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		user.FirstName = signupdata.FirstName
-		user.LastName = signupdata.LastName
-		user.Email = signupdata.Email
-		user.UserType = signupdata.UserType
-		user.CreatedAt = time.Now()
-		user.UpdatedAt = time.Now()
-		user.ID = primitive.NewObjectID()
+		
+		newUser = models.User{
+			ID:           primitive.NewObjectID(),
+			FirstName:    signupdata.FirstName,
+			LastName:     signupdata.LastName,
+			Email:        signupdata.Email,
+			Password:     hashPassword,
+			UserType:     signupdata.UserType,
+			Verified:     false,
+			RefreshToken: "", // set below
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now(),
+		}
+
 		token := helpers.GenerateToken(helpers.TokenInput{
-			UID:      user.ID.Hex(),
-			UserType: signupdata.UserType,
+			UID:      newUser.ID.Hex(),
+			UserType: newUser.UserType,
 		})
+		newUser.RefreshToken = token.RefreshToken
 
-		user.RefreshToken = token.RefreshToken
-		result, err := User.InsertOne(ctx, user)
-
+		_, err = User.InsertOne(ctx, newUser)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"User create error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User creation failed"})
 			return
 		}
-		c.SetCookie(
-			"Refreshtoken",     // Name
-			token.RefreshToken, // Value
-			3600,
-			"/",   // Path
-			"",    // Domain (empty for current domain)
-			false, // Secure (true for HTTPS, false for local HTTP)
-			true,  // HttpOnly
-		)
-		c.SetCookie(
-			"token",           // Name
-			token.SignedToken, // Value
-			3600,
-			"/",   // Path
-			"",    // Domain (empty for current domain)
-			false, // Secure (true for HTTPS, false for local HTTP)
-			true,  // HttpOnly
-		)
+		
+		//NOTE: otp model 
+		userOtp, _ := helpers.GenerateOTP(6)
+		otp = models.OTP{
+			UserID: newUser.ID,
+			Otp:    userOtp,
+			Used:   false,
+			TTL:    time.Now().Add(time.Duration(config.OTP_EXPIRY) * time.Second),
+		}
+
+		_, err = OTP.InsertOne(ctx, otp)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create OTP"})
+			return
+		}
+
+		// c.SetCookie(
+		// 	"Refreshtoken",     // Name
+		// 	token.RefreshToken, // Value
+		// 	3600,
+		// 	"/",   // Path
+		// 	"",    // Domain (empty for current domain)
+		// 	false, // Secure (true for HTTPS, false for local HTTP)
+		// 	true,  // HttpOnly
+		// )
+		// c.SetCookie(
+		// 	"token",           // Name
+		// 	token.SignedToken, // Value
+		// 	3600,
+		// 	"/",   // Path
+		// 	"",    // Domain (empty for current domain)
+		// 	false, // Secure (true for HTTPS, false for local HTTP)
+		// 	true,  // HttpOnly
+		// )
 
 		c.JSON(http.StatusOK, gin.H{
-			// "token":   token.SignedToken,
-			"Message": "User is added succesfully.",
-			"data": gin.H{
-				"id":        result.InsertedID,
-				"name":      user.FirstName + user.LastName,
-				"email":     user.Email,
-				"user_type": user.UserType,
-			},
+			"Message": "OTP send to email.Please verify.",
 		})
 
 	}
