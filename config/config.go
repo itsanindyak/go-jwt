@@ -15,12 +15,12 @@ var (
 	TOKEN_EXPIRY         int
 	REFRESH_TOKEN_KEY    []byte
 	REFRESH_TOKEN_EXPIRY int
+	OTP_EXPIRY           int
 )
 
 func init() {
 	var err error
 
-	
 	// Load .env only if not in production
 	if os.Getenv("ENV") != "production" {
 		err = godotenv.Load(".env")
@@ -59,6 +59,12 @@ func init() {
 
 	if err != nil {
 		log.Fatal("❌ REFRESH_TOKEN_EXPIRY is not a valid integer")
+	}
+
+	OTP_EXPIRY, err = strconv.Atoi(os.Getenv("OTP_EXPIRY"))
+
+	if err != nil {
+		log.Fatal("❌ OTP_EXPIRY is not a valid integer")
 	}
 
 }
