@@ -1,16 +1,27 @@
 package main
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/itsanindyak/go-jwt/config"
+	"github.com/itsanindyak/go-jwt/pkg/logger"
 	routes "github.com/itsanindyak/go-jwt/routes"
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
 
+	env := config.ENV
+	// $env:ENV="production"
+	switch env {
+	case "production":
+		gin.SetMode(gin.ReleaseMode)
+		logger.Info("🚀 Running in PRODUCTION mode")
+	case "development":
+		gin.SetMode(gin.TestMode)
+		logger.Info("🧪 Running in TEST mode")
+	default:
+		gin.SetMode(gin.DebugMode)
+		logger.Info("🛠️ Running in DEVELOPMENT mode")
+	}
 	port := config.PORT
 
 	if port == "" {
@@ -23,7 +34,7 @@ func main() {
 	// Trust only localhost
 	err := router.SetTrustedProxies([]string{"127.0.0.1"})
 	if err != nil {
-		log.Fatalf("Error setting trusted proxies: %v", err)
+		logger.Fatal("Error setting trusted proxies: " + err.Error())
 	}
 
 	// add middleware for logging
