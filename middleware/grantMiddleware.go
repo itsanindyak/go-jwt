@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,6 @@ func GrantMiddleware(Permissions []string) gin.HandlerFunc {
 		hasPermission := false
 
 		for _, permission := range Permissions {
-			log.Printf("User with ID %s and type %s is attempting to access permission %s", userID, userType, permission)
 
 			// Special case: 'read_self' for regular users
 			if permission == "read_self" && userType == "USER" {
