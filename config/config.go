@@ -33,7 +33,6 @@ func init() {
 			logger.Error("Could not load .env file, continuing with system environment variables")
 			return
 		}
-		logger.Success("📦 Running in " + ENV + " environment")
 	}
 
 	PORT = os.Getenv("PORT")
