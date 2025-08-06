@@ -16,3 +16,8 @@ type Signup struct {
 type OTPReq struct{
 	OTP string `json:"otp" validate:"required"`
 }
+
+type NameUpdate struct{
+	FirstName string `json:"first_name" validate:"required,min=3,max=20"`
+	LastName  string `json:"last_name" validate:"required,min=3,max=20"`
+}
