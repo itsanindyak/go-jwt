@@ -5,11 +5,14 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/itsanindyak/go-jwt/database"
 	"github.com/itsanindyak/go-jwt/models"
+	"github.com/itsanindyak/go-jwt/pkg/helpers"
 	"github.com/itsanindyak/go-jwt/pkg/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -19,23 +22,22 @@ import (
 
 var User *mongo.Collection = database.GetCollection(context.Background(), "user")
 
-var OTP *mongo.Collection = database.GetCollection(context.Background(),"otp")
+var OTP *mongo.Collection = database.GetCollection(context.Background(), "otp")
 
 func init() {
-    indexModel := mongo.IndexModel{
-        Keys: bson.M{"expiresAt": 1},
-        Options: options.Index().
-            SetExpireAfterSeconds(0),
-    }
+	indexModel := mongo.IndexModel{
+		Keys: bson.M{"expireAt": 1},
+		Options: options.Index().
+			SetExpireAfterSeconds(0),
+	}
 
-    _, err := OTP.Indexes().CreateOne(context.Background(), indexModel)
-    if err != nil {
-        logger.Error("⚠️ TTL index creation failed: "+ err.Error())
-    } else {
-        logger.Success("✅ TTL index ensured")
-    }
+	_, err := OTP.Indexes().CreateOne(context.Background(), indexModel)
+	if err != nil {
+		logger.Error("⚠️ TTL index creation failed: " + err.Error())
+	} else {
+		logger.Success("✅ TTL index ensured")
+	}
 }
-
 
 func GetUser() gin.HandlerFunc {
 
@@ -96,7 +98,7 @@ func GetUsers() gin.HandlerFunc {
 		projectBeforeGroup := bson.D{
 			{Key: "$project", Value: bson.D{
 				{Key: "password", Value: 0},
-				{Key: "refreshtoken", Value: 0},
+				{Key: "refresh_token", Value: 0},
 			}},
 		}
 
@@ -142,23 +144,85 @@ func GetUsers() gin.HandlerFunc {
 
 func DeleteUser() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID := c.Param("user_id")
-		if userID == "" {
+		reqID := c.Param("user_id")
+		if reqID == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found in params"})
 			return
 		}
 
-		_, err := primitive.ObjectIDFromHex(userID)
+		userID, err := primitive.ObjectIDFromHex(reqID)
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		_, err = User.DeleteOne(ctx, bson.M{"_id": userID})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"msg": "user delete Succesffully"})
+
 	}
 }
 
 func UpdateUser() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
+	return func(c *gin.Context) {
+		reqID := c.Param("user_id")
+		if reqID == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User ID not found in params"})
+			return
+		}
+		userID, err := primitive.ObjectIDFromHex(reqID)
 
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid User ID format"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		var updateData helpers.NameUpdate
+
+		if err := c.BindJSON(&updateData); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if err = validate.Struct(&updateData); err != nil {
+			var errors []string
+			for _, err := range err.(validator.ValidationErrors) {
+				errors = append(errors, err.Field()+" is invalid: "+err.Tag())
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"Error": strings.Join(errors, ", ")})
+			return
+		}
+
+		update := bson.M{
+			"$set": bson.M{
+				"first_name": updateData.FirstName,
+				"last_name":  updateData.LastName,
+				"updated_at": time.Now(),
+			},
+		}
+
+		result, err := User.UpdateByID(ctx, userID, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user details"})
+			return
+		}
+
+		if result.MatchedCount == 0 {
+			c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 	}
 }
