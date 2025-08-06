@@ -237,7 +237,7 @@ func Login() gin.HandlerFunc {
 			UserType: foundUser.UserType,
 		})
 
-		update := bson.M{"$set": bson.M{"refreshtoken": token.RefreshToken, "updatedat": time.Now()}}
+		update := bson.M{"$set": bson.M{"refresh_token": token.RefreshToken, "updated_at": time.Now()}}
 		_, err = User.UpdateOne(ctx, bson.M{"_id": foundUser.ID}, update)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update refresh token"})
@@ -268,7 +268,7 @@ func Login() gin.HandlerFunc {
 
 		c.JSON(http.StatusOK, gin.H{
 			// "token":   token.SignedToken,
-			"Message": "User is added succesfully.",
+			"Message": "Login succesfully.",
 			"data": gin.H{
 				"id":        foundUser.ID,
 				"name":      foundUser.FirstName + foundUser.LastName,
@@ -345,7 +345,7 @@ func VerifyOTP() gin.HandlerFunc {
 		}
 
 		// Update user as verified
-		_, err = User.UpdateOne(ctx, bson.M{"_id": userID}, bson.M{"$set": bson.M{"verified": true, "updatedat": time.Now()}})
+		_, err = User.UpdateOne(ctx, bson.M{"_id": userID}, bson.M{"$set": bson.M{"verified": true, "updated_at": time.Now()}})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify user"})
 			return
