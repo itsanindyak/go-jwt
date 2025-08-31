@@ -33,6 +33,7 @@ var (
 	GOOGLE_CLIENT_ID     string
 	GOOGLE_CLIENT_SECRET string
 	GOOGLE_REDIRECT_URL  string
+	GOOGLE_OIDC_ISSUER   string
 
 	//-----------------
 	// GitHub OAuth
@@ -118,6 +119,12 @@ func init() {
 	//-----------------
 	GOOGLE_CLIENT_ID = os.Getenv("GOOGLE_CLIENT_ID")
 	GOOGLE_CLIENT_SECRET = os.Getenv("GOOGLE_CLIENT_SECRET")
+	GOOGLE_OIDC_ISSUER := os.Getenv("GOOGLE_OIDC_ISSUER")
+
+	if GOOGLE_OIDC_ISSUER == "" {
+		GOOGLE_OIDC_ISSUER = "https://accounts.google.com"
+	}
+	
 	GOOGLE_REDIRECT_URL = BASE_URL + "/auth/google/callback"
 
 	if GOOGLE_CLIENT_ID == "" || GOOGLE_CLIENT_SECRET == "" {
