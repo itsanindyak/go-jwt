@@ -11,9 +11,11 @@ require (
 	github.com/sendgrid/sendgrid-go v3.16.1+incompatible
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.37.0
+	golang.org/x/oauth2 v0.30.0
 )
 
 require (
+	cloud.google.com/go/compute/metadata v0.3.0 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
